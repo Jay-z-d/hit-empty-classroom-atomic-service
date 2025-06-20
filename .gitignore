@@ -1,0 +1,68 @@
+# HarmonyOS项目构建产物
+/node_modules
+/oh_modules
+**/build
+/.hvigor
+/.cxx
+/.clangd
+/.clang-format
+/.clang-tidy
+**/.test
+/.appanalyzer
+**/build-profile-json5.backup
+
+# 开发环境配置
+/local.properties
+/.idea
+.DS_Store
+*.iml
+
+# 日志文件
+*.log
+**/*.log
+
+# 临时文件
+*.tmp
+*.temp
+**/*.tmp
+**/*.temp
+
+# 系统生成文件
+Thumbs.db
+*.bak
+*.swp
+*.swo
+*~
+
+# 开发工具配置
+.vscode/
+*.code-workspace
+
+# 签名文件和密钥
+*.keystore
+*.jks
+*.p12
+*.crt
+*.cer
+
+# 个人配置文件
+config.local.json
+*.personal.json
+
+# Python相关（如果有Python脚本）
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# 打包相关
+*.hap
+*.app
+dist/
+outputs/

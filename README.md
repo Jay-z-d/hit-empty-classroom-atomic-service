@@ -225,14 +225,14 @@ A: 每学期开始时，运行 `python scripts/prepare_data.py` 即可更新到�
 感谢**哈尔滨工业大学**提供的数据支持  
 感谢所有为项目贡献代码和建议的开发者们
 
-**开发团队**：HIT学生开发小组  
+**开发**：个人  
 **项目状态**：✅ 活跃维护中  
-**最后更新**：2025年1月
+**最后更新**：2025年6月 重新上传
 
 <div align="center">
 
 **⭐ 如果这个项目对你有帮助，请给我们一个Star！**
 
-[🚀 立即体验](https://github.com/yourusername/classroomquery) | [📖 详细文档](https://github.com/yourusername/classroomquery/wiki) | [🐛 问题反馈](https://github.com/yourusername/classroomquery/issues)
+[🚀 立即体验](https://github.com/Jay-z-d/hit-empty-classroom-atomic-service) | [📖 详细文档](https://github.com/Jay-z-d/hit-empty-classroom-atomic-service/wiki) | [🐛 问题反馈](https://github.com/Jay-z-d/hit-empty-classroom-atomic-service/issues)
 
 </div> 

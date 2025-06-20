@@ -114,8 +114,8 @@ graph LR
 ### ⚡ **一键部署**
 ```bash
 # 1. 克隆项目
-git clone https://github.com/yourusername/classroomquery.git
-cd classroomquery
+git clone https://github.com/Jay-z-d/hit-empty-classroom-atomic-service.git
+cd hit-empty-classroom-atomic-service
 
 # 2. 准备数据 (如有新数据)
 python scripts/prepare_data.py
@@ -180,7 +180,7 @@ private static readonly SEMESTER_START_DATE = new Date(2025, 1, 24); // 2025年2
 ## 🤝 贡献指南
 
 ### 🐛 **问题反馈**
-- [GitHub Issues](https://github.com/yourusername/classroomquery/issues) 
+- [GitHub Issues](https://github.com/Jay-z-d/hit-empty-classroom-atomic-service/issues) 
 - 描述问题 + 复现步骤 + 设备信息
 
 ### 💡 **功能建议**
@@ -225,9 +225,9 @@ A: 每学期开始时，运行 `python scripts/prepare_data.py` 即可更新到�
 感谢**哈尔滨工业大学**提供的数据支持  
 感谢所有为项目贡献代码和建议的开发者们
 
-**开发**：个人  
+**开发团队**：HIT学生开发小组  
 **项目状态**：✅ 活跃维护中  
-**最后更新**：2025年6月 重新上传
+**最后更新**：2025年1月
 
 <div align="center">
 

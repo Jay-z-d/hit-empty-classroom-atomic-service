@@ -2,6 +2,9 @@ import { router } from '@kit.ArkUI';
 import { FreeClassroomResult, DataConstants, FloorGroup, TimeSlotInfo } from '../model/ClassroomData';
 import { DateUtils } from '../model/DateUtils';
 import { ClassroomDataService } from '../service/ClassroomDataService';
+import { UserPreferences } from '../model/UserPreferences';
+import { ThemeManager, ThemeColors } from '../model/ThemeManager';
+import { PinyinMatcher } from '../model/PinyinMatcher';
 
 @Entry
 @Component
@@ -12,59 +15,193 @@ struct ClassroomListPage {
   @State selectedTimeSlot: string = 'all';
   @State allTimeSlots: Map<string, FreeClassroomResult[]> = new Map();
   @State currentClassrooms: FreeClassroomResult[] = [];
+  @State filteredClassrooms: FreeClassroomResult[] = [];
   @State loading: boolean = true;
   @State errorMessage: string = '';
+  @State searchText: string = '';
+  @State showSearch: boolean = false;
+  @StorageLink('isDarkMode') isDarkMode: boolean = false;
 
   private dataService: ClassroomDataService = new ClassroomDataService(getContext(this));
 
   aboutToAppear() {
+    // 初始化主题管理器
+    ThemeManager.getInstance();
+    
     const params = router.getParams() as Record<string, string | number>;
     if (params) {
-              if (params.selectedDate && typeof params.selectedDate === 'number') {
-          this.selectedDate = new Date(params.selectedDate);
-        }
-        if (params.selectedCampus && typeof params.selectedCampus === 'string') {
-          this.selectedCampus = params.selectedCampus;
-        }
-        if (params.selectedBuilding && typeof params.selectedBuilding === 'string') {
-          this.selectedBuilding = params.selectedBuilding;
-        }
+      if (params.selectedDate && typeof params.selectedDate === 'number') {
+        this.selectedDate = new Date(params.selectedDate);
+      }
+      if (params.selectedCampus && typeof params.selectedCampus === 'string') {
+        this.selectedCampus = params.selectedCampus;
+      }
+      if (params.selectedBuilding && typeof params.selectedBuilding === 'string') {
+        this.selectedBuilding = params.selectedBuilding;
+      }
     }
     this.loadClassroomData();
+  }
+
+  /**
+   * 过滤教室数据
+   */
+  private filterClassrooms(): void {
+    if (!this.searchText) {
+      this.filteredClassrooms = this.currentClassrooms;
+    } else {
+      this.filteredClassrooms = this.currentClassrooms.filter(classroom => 
+        PinyinMatcher.isMatch(classroom.roomName, this.searchText)
+      );
+    }
+  }
+
+  /**
+   * 处理搜索文本变化
+   */
+  private onSearchTextChange(value: string): void {
+    this.searchText = value;
+    this.filterClassrooms();
+  }
+
+  /**
+   * 切换搜索框显示状态
+   */
+  private toggleSearch(): void {
+    this.showSearch = !this.showSearch;
+    if (!this.showSearch) {
+      this.searchText = '';
+      this.filterClassrooms();
+    }
   }
 
   build() {
     Column() {
       // 标题栏
       Row() {
-        Image($r('app.media.icon'))
-          .width(24)
-          .height(24)
-          .fillColor('#007DFF')
+        Text('←')
+          .fontSize(24)
+          .fontColor(ThemeColors.getPrimaryColor())
           .onClick(() => {
             router.back();
           })
           .margin({ right: 16 })
 
-        Column() {
-          Text(this.selectedBuilding)
-            .fontSize(18)
-            .fontWeight(FontWeight.Bold)
-            .fontColor('#333333')
-          Text(`${this.selectedCampus}`)
+        if (this.showSearch) {
+          // 搜索框
+          TextInput({ 
+            placeholder: '拼音搜索教室 (如: zhengxin101)',
+            text: this.searchText 
+          })
+            .fontSize(16)
+            .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
+            .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
+            .placeholderColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
+            .borderRadius(8)
+            .padding({ left: 12, right: 12 })
+            .layoutWeight(1)
+            .onChange((value: string) => {
+              this.onSearchTextChange(value);
+            })
+
+          Button('取消')
             .fontSize(14)
-            .fontColor('#666666')
+            .fontColor(ThemeColors.getPrimaryColor())
+            .backgroundColor('transparent')
+            .borderRadius(16)
+            .width(50)
+            .height(32)
+            .onClick(() => {
+              this.toggleSearch();
+            })
+            .margin({ left: 12 })
+        } else {
+          Column() {
+            Text(this.selectedBuilding)
+              .fontSize(18)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
+            Text(`${this.selectedCampus}`)
+              .fontSize(14)
+              .fontColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
+          }
+          .alignItems(HorizontalAlign.Start)
+          .layoutWeight(1)
+
+          Button('搜索')
+            .fontSize(14)
+            .fontColor('#ffffff')
+            .backgroundColor(ThemeColors.getPrimaryColor())
+            .borderRadius(16)
+            .width(50)
+            .height(32)
+            .onClick(() => {
+              this.toggleSearch();
+            })
         }
-        .alignItems(HorizontalAlign.Start)
-        .layoutWeight(1)
       }
       .width('100%')
       .height(60)
       .padding({ left: 16, right: 16 })
-      .backgroundColor('#f8f8f8')
+      .backgroundColor(ThemeColors.getTopBarBackgroundColor(this.isDarkMode))
       .alignItems(VerticalAlign.Center)
 
       Column({ space: 16 }) {
+        // 搜索功能区域（临时测试位置）
+        Row() {
+          Text('🔍 搜索教室')
+            .fontSize(16)
+            .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
+            .layoutWeight(1)
+          
+          if (this.showSearch) {
+            Row({ space: 8 }) {
+              TextInput({ 
+                placeholder: '拼音搜索教室 (如: zhengxin101)',
+                text: this.searchText 
+              })
+                .fontSize(14)
+                .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
+                .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
+                .placeholderColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
+                .borderRadius(8)
+                .padding({ left: 12, right: 12 })
+                .width(150)
+                .height(32)
+                .onChange((value: string) => {
+                  this.onSearchTextChange(value);
+                })
+              
+              Button('取消')
+                .fontSize(12)
+                .fontColor('#ffffff')
+                .backgroundColor('#ff4444')
+                .borderRadius(16)
+                .width(50)
+                .height(32)
+                .onClick(() => {
+                  this.toggleSearch();
+                })
+            }
+          } else {
+            Button('开始搜索')
+              .fontSize(14)
+              .fontColor('#ffffff')
+              .backgroundColor(ThemeColors.getPrimaryColor())
+              .borderRadius(16)
+              .width(80)
+              .height(36)
+              .onClick(() => {
+                this.toggleSearch();
+              })
+          }
+        }
+        .width('100%')
+        .padding(16)
+        .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
+        .borderRadius(12)
+        .alignItems(VerticalAlign.Center)
+
         // 查询信息和统计
         Row() {
           Column({ space: 4 }) {
@@ -72,15 +209,15 @@ struct ClassroomListPage {
               .fontSize(16)
               .fontWeight(FontWeight.Medium)
               .fontColor('#333333')
-            Text(`第${DateUtils.getWeekByDate(this.selectedDate)}周 · 共${this.currentClassrooms.length}间空教室`)
+            Text(`第${DateUtils.getWeekByDate(this.selectedDate)}周 · 共${this.filteredClassrooms.length}间空教室`)
               .fontSize(14)
-              .fontColor('#007DFF')
+              .fontColor(ThemeColors.getPrimaryColor())
           }
           .alignItems(HorizontalAlign.Start)
         }
         .width('100%')
         .padding(16)
-        .backgroundColor('#ffffff')
+        .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
         .borderRadius(12)
 
         // 时间段筛选
@@ -126,10 +263,10 @@ struct ClassroomListPage {
             LoadingProgress()
               .width(40)
               .height(40)
-              .color('#007DFF')
+              .color(ThemeColors.getPrimaryColor())
             Text('加载中...')
               .fontSize(14)
-              .fontColor('#666666')
+              .fontColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
               .margin({ top: 8 })
           }
           .layoutWeight(1)
@@ -140,7 +277,7 @@ struct ClassroomListPage {
               .fontSize(40)
             Text(this.errorMessage)
               .fontSize(16)
-              .fontColor('#666666')
+              .fontColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
               .margin({ top: 8 })
             Button('重新加载')
               .fontSize(14)
@@ -151,13 +288,13 @@ struct ClassroomListPage {
           }
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
-        } else if (this.currentClassrooms.length === 0) {
+        } else if (this.filteredClassrooms.length === 0) {
           Column() {
-            Text('📝')
+            Text(this.searchText ? '🔍' : '📝')
               .fontSize(40)
-            Text('暂无空闲教室')
+            Text(this.searchText ? '没有找到匹配的教室' : '暂无空闲教室')
               .fontSize(16)
-              .fontColor('#666666')
+              .fontColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
               .margin({ top: 8 })
           }
           .layoutWeight(1)
@@ -172,10 +309,10 @@ struct ClassroomListPage {
                     Text(`${floorGroup.floor}楼`)
                       .fontSize(16)
                       .fontWeight(FontWeight.Medium)
-                      .fontColor('#333333')
+                      .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
                     Text(`${floorGroup.rooms.length}间`)
                       .fontSize(14)
-                      .fontColor('#666666')
+                      .fontColor(ThemeColors.getSecondaryTextColor(this.isDarkMode))
                   }
                   .width('100%')
                   .justifyContent(FlexAlign.SpaceBetween)
@@ -187,7 +324,7 @@ struct ClassroomListPage {
                         Text(classroom.roomName)
                           .fontSize(16)
                           .fontWeight(FontWeight.Medium)
-                          .fontColor('#333333')
+                          .fontColor(ThemeColors.getPrimaryTextColor(this.isDarkMode))
                         
                         // 显示空闲时间段
                         if (this.selectedTimeSlot === 'all') {
@@ -195,16 +332,16 @@ struct ClassroomListPage {
                             ForEach(classroom.freeTimeSlots, (timeSlot: string, index: number) => {
                               Text(DateUtils.getTimeSlotDescription(timeSlot))
                                 .fontSize(12)
-                                .fontColor('#007DFF')
+                                .fontColor(ThemeColors.getPrimaryColor())
                                 .padding({ left: 8, right: 8, top: 4, bottom: 4 })
-                                .backgroundColor('#e8f4ff')
+                                .backgroundColor(ThemeColors.getPrimaryLightColor(this.isDarkMode))
                                 .borderRadius(8)
                             })
                           }
                         } else {
                           Text(DateUtils.getTimeSlotDescription(this.selectedTimeSlot))
                             .fontSize(14)
-                            .fontColor('#007DFF')
+                            .fontColor(ThemeColors.getPrimaryColor())
                         }
                       }
                       .alignItems(HorizontalAlign.Start)
@@ -212,11 +349,11 @@ struct ClassroomListPage {
                     }
                     .width('100%')
                     .padding(16)
-                    .backgroundColor('#ffffff')
+                    .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
                     .borderRadius(8)
                     .shadow({
                       radius: 4,
-                      color: '#1a000000',
+                      color: ThemeColors.getShadowColor(this.isDarkMode),
                       offsetX: 0,
                       offsetY: 1
                     })
@@ -224,7 +361,7 @@ struct ClassroomListPage {
                 }
                 .width('100%')
                 .padding(16)
-                .backgroundColor('#f8f9fa')
+                .backgroundColor(ThemeColors.getCardBackgroundColor(this.isDarkMode))
                 .borderRadius(12)
               }
             })
@@ -238,7 +375,7 @@ struct ClassroomListPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f5f5f5')
+    .backgroundColor(ThemeColors.getBackgroundColor(this.isDarkMode))
   }
 
   private async loadClassroomData() {
@@ -295,12 +432,15 @@ struct ClassroomListPage {
       // 显示指定时间段的教室
       this.currentClassrooms = this.allTimeSlots.get(this.selectedTimeSlot) || [];
     }
+    
+    // 更新过滤后的教室数据
+    this.filterClassrooms();
   }
 
   private groupClassroomsByFloor(): FloorGroup[] {
     const floorMap = new Map<number, FreeClassroomResult[]>();
     
-    this.currentClassrooms.forEach(room => {
+    this.filteredClassrooms.forEach(room => {
       if (!floorMap.has(room.floor)) {
         floorMap.set(room.floor, []);
       }
